@@ -1,0 +1,51 @@
+linux
+
+boot process
+on button -> 
+
+first - bios/uefi starts up --> bios is older and uefi( Unified Extensible Firmware Interface ) is modern
+
+second - POST - power on self test to see all devices are working properly or not
+
+third - boot loader software is loaded (stored in the first chunk of the hard drive called MBR), GRUB is a widely used bootloader for Linux systems and some other Unix-like operating systems.
+It allows users to choose between different operating systems or kernel configurations to boot into when starting their computer
+eg : 
+		# Set default boot entry
+		set default=0
+		
+		# Timeout in seconds before default boot entry is automatically selected
+		set timeout=10
+		
+		# Define different boot entries
+		menuentry "Ubuntu Linux" {
+			set root=(hd0,1)
+			linux /boot/vmlinuz-5.4.0-88-generic root=/dev/sda1
+			initrd /boot/initrd.img-5.4.0-88-generic
+		}
+		
+		menuentry "Windows 10" {
+			set root=(hd0,2)
+			chainloader +1
+		}
+
+four - kernel is loaded into the memory It decompresses itself and starts executing , It initializes essential hardware components and device drivers
+needed to interact with hardware like CPU, memory, disks, etc , It sets up interrupt handlers, initializes scheduler, and starts the idle task.
+
+five - Once the kernel initialization is complete, the kernel starts the init process (init or systemd in modern Linux distributions).
+The init process is the first userspace process with PID 1 and is responsible for initializing the system services and other essential processes.
+It mounts the root filesystem (specified by the kernel parameters) as read-only initially.
+
+six - it starts all the /etc/innittab or systemd unit files and starts essentials deamons
+It mounts other filesystems specified in /etc/fstab and sets up the environment for user login.
+
+seven - if systemd is configured to have a gui - loads up
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+linux file system
+bin refers to binary files which are executables , programs and application  eg ls,cat etc
+sbin - system binaries which are used by system administrator (usually used in single user mode where we login into the system as single user that is as root
+and make changes and important configurations like repairs or upgr)
+
+
