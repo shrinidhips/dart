@@ -49,3 +49,13 @@ sbin - system binaries which are used by system administrator (usually used in s
 and make changes and important configurations like repairs or upgr)
 
 
+
+
+-------------------------------------------------------------------------------------------------------------------
+basic commands
+
+head - usage "head -n 10 filename" - to get first n number of line in the file
+tail - usage "tail -n 10 filename" - to get last n number of line in the file
+sort - usage "sort filename" - sorts a file as per alphabetical order , "sort -n filname" to sort numerically
+cat - usage "cat file1 file2" - Concatenates files and prints on the standard output.
+
