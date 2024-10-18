@@ -1,0 +1,200 @@
+DevOps pre-requisites
+
+cat > new.txt
+keihfoienfbfor
+ctrl D
+
+mkdir -p /home/user/asia/india/bangalore
+
+Vi editor
+it has 2 modes command mode and insert mode
+esc and I are used to switch
+
+delete char use 'x'
+delete a line use 'dd'
+copy a line 'yy'
+paste use 'p'
+:w filename to save
+find /search
+u - undo the change
+ctrl -r to redo
+
+user accounts
+whoami
+id
+su shrinidhi
+ssh username@1.2.3.4
+/etc/sudoers
+
+Package management system
+rpm 
+to install rpm -i telent.rpm
+to remove rpm -e telnet
+rpm -q telnet
+
+yum
+yum is a highlevel package manager that user rpm to do all the above internally
+configurations is found in /etc/yum.repos.d
+yum list
+yum repolist
+
+services
+software that are running always eg: service httpd start
+systemctl start httpd
+service commands use systemctl underneath
+systemctl status firewalld
+systemctl start 
+systemctl enable , disable
+creating a service , imagine a python executable in /opt/code/main.py using /usr/bin/python3 
+to create a service out of it
+/etc/system/system
+vi myService.service
+[Service]
+ExecStart = /usr/bin/python3 /opt/code/main.py
+:wq
+systemctl daemon-reload
+systemctl start myService
+
+
+[Install]
+WantedBy = multi-user.target
+this section tells that start this service after this runlevel
+
+[Unit]
+description = "test"
+
+pre or post scipts need before or after the service can be added in the [Service] section
+[Service]
+ExecStartPre = /opt/code/config.sh
+ExecStartPost = /opt/code/status.sh
+Restart = always
+
+------------------------------------------------------------------------------------------
+Basics of networking
+A , B are 2 systems if they want to talk to each other they can connect to a switch and this is in a total can be called as a network
+eth0 is an interface used to connect to the switch physical or virtual.
+A [eth 0]----------->switch 1<----------------[eth 0] B
+
+ip link - command to the interfaces of the host
+
+to assign ip address to a given host and interface user
+ip addr add 192.168.1.10/24 dev eth0
+
+consider there is one more network with switch2 that connect C, D
+C [eth 0]----------->switch 2<----------------[eth 0] D
+
+now if C wants to talk to B it can use a device called as router
+
+Gateway is used to connect across networks
+if network is a room Gateway is door using which you can connect to other Rooms
+
+route is the command used to get kernels routing table
+to make B to C
+use command - ip route add 192.168.2.0/24 via 192.168.1.1
+this should be done to each of the device you want to connect incase you cannot add each but can tell through which gateway the request has to go use
+ip route add default via 192.168.1.1(this is your gateway)
+default = 0.0.0.0
+
+ip link - used to list all interfaces
+ip addr - used to list the ip addresses for all interfaces
+ip addr add [ip] dev [interface] - used to assign ip address to the interface
+changes made using these commands are applicable only till reboot to make permanent changes add changes to /etc/network interface file
+
+ip route - list the routing table
+ip route add ip via router - add an entry to routing table
+
+cat /proc/sys/net/ipv4/ip_forward [0,1] - check if ip forwarding is enabled(inbetween the interface of given node)
+
+NameResolution can be added using /etc/hosts
+
+This will get complicated as the size of servers increases so we should have a DNS
+to add this we should add entry to 
+cat /etc/resolv.conf
+nameserver 192.168.1.100
+
+priority is always local /etc/hosts , then the DNS by default
+this can be changed in cat /etc/nsswitch.conf
+....
+hosts: files dns
+...
+
+Domain Names (www.google.com)
+Root 			.
+Top level domain name  	.com
+			google
+subdomain		maps, www, drive, apps
+
+nslookup is used do query on dns not on local hosts
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+kodekloud - Learning Linux Basics Course & Labs
+
+01: Linux Kernel
+
+* the Linux kernel is monolithic, which means the kernel carries out CPU scheduling , Memory management , and several operations by itself
+* it is modular in nature , where it dynamically extends its capabilities through use of dynamically loaded kernel modules
+Major tasks of kernel
+1) Process Management 
+2) Memory Management
+3) Device Drivers and management
+4) System calls and security
+
+$uname
+Linux
+$uname -r
+4.18.0-305.3.1.el8.x86_64
+$uname -a
+Linux osboxes 4.18.0-305.3.1.el8.x86_64 #1 SMP Tue Jun 1 16:14:33 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux
+
+where 4 - kernel version
+18 - Major version
+0 - minor version
+305 - patch version
+
+kernel and user space
+one of the main functions of kernel is memory management
+Memory is divided into two areas:
+1) Kernel Space
+	Kernel Code
+	kernel Extensions
+	Device Drivers
+2) User Space
+	Application programs
+	C
+	Java
+	Python
+	Ruby e.t.c
+	Docker Containers
+All user programs mainly manipulate the data that is present in the main memory and disk
+User process get that access by making a call to the kernel called as System Call
+eg : user-program--------->SYSTEMCALL--->KERNEL----------->Main MEM / DISK
+	USER SPACE--------------------->KERNEL SPACE------>HARDWARE
+eg : open a file , list the processes , Define a variable
+
+
+02:Working with Hardware
+lets take an example of USB device
+1)when a USB device is attached to the hardware the corresponding driver in the kernel stages a corresponding event 
+2)this event is called as uevents and then is sent to User Space device manager daemon called udev
+3)this udev service is responsible for dynamically creating a device node associated with the newly attached USB drive in the /dev/ filesystem
+4)once this process is complete we should be able to see newly attached device under /dev/ filesystem
+
+dmesg - command used to get lot of messages generated by the kernel 
+$ dmesg
+$ dmesg | grep -i usb
+
+The udevadm is the management utility for udev which queries the database for device information
+$ udevadm info --query=path --name=/dev/sda5
+
+The udevadm monitor listens to the kernel new uevents upon detecting an event
+$ udevadm monitor
+
+$ lspci (list of Peripheral component interconnect)
+$ lsblk (block devices connected to the system)MAJOR - 1-RAM , 3-harddisk/cdrom , 6-parallel printers , 8-scsi disk
+$ lscpu
+$ lsmem - summary
+$ free -m
+$ lshw
+
+
+
