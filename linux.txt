@@ -59,3 +59,379 @@ tail - usage "tail -n 10 filename" - to get last n number of line in the file
 sort - usage "sort filename" - sorts a file as per alphabetical order , "sort -n filname" to sort numerically
 cat - usage "cat file1 file2" - Concatenates files and prints on the standard output.
 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Chapter 1
+
+The kernel
+one of the man job is sub divide the memory and make sure all the process get the memory share
+
+the kernel manages tasks in four general system areas
+Process Management  : which process must use cpu
+Memory Management: keeping track of memory , which is the currently allocated to a given process which my be shared or which might be free
+Devices Management: kernel is the interface between hardware and processes
+System calls and support : Process make system calls to talk to the kernel 
+
+Process Management
+* Describe start , pause , resume , schedule and terminate
+* main idea is how cpu is utilized by the process
+* Consider a CPU with one core , many process use the same cpu but in practice at a time only one process can use the cpu at a given fraction of time
+* the act of processes giving the control of cpu to another process is called as a context-switch
+* each piece of time is called as time slice which gives each process enough time for significant computation
+* since this time slice is very small humans cant perceive them hence computers has capability to multitasking
+* Eg
+
+1.The CPU interrupts the current process based on internal timer and gives control to kernel for kernel mode
+2.The kernel records the current state of the CPU and memory which will be essential to resume the process that was interrupted
+3.The kernel performs the task that has come up in the preceding time-slice eg I/O, device call etc
+4.The kernel is now to ready tot let another process run , it analyzes the list of processes that are ready to run and chooses one
+5.Kernel prepares the memory for this new process and the prepare cpu
+6.The kernel tells the cpu how long the time-slice for this process will last
+7.The kernel switches the CPU into user mode and hands the control of the cpu to process
+
+This kernel runs between the process time-slices during the context switch
+
+Memory Management
+The kernel must manage memory during context-switch which could be a complex job 
+these are the conditions
+* The kernel should have its own private area that user process can't use
+* Each user process needs its own section  of memory
+* One user process shouldn't be able to acces the private memory of another
+* User process can share memory
+* Some memory could be read-only
+
+modern system has MMU(memory management unit) that enables memory access schema called as Virtual Memory
+* when using VirtualMem the process doesnot directly access the memory by its physical location in the hardware
+* Insted it make the process to consider it has the entire process to itself
+* When the process wants access to some memory the mmu intecepts the access and uses memory address map to translate the memory address from process point of view to into actual physical memoryaddress in the machine
+* the kernel will initialize and alter and maintain this memory address map
+* Eg: During a contesxt switch the kernel has to switch the address map of the coming process
+This implementation of the address map is called as a page table
+
+Device Driver Management
+* Kernels job wrt device management is comparatively simple/
+* Devices should be directly accessed only by the kernel , specifically in kernel mode\
+* Difffernt devices may have different interfaces sometimes even if they do the same job
+* hence the device drivers have traditionally been part kernel and hence have a unified interface to user process and simplify the software developers job
+
+System Calls and Support
+* There are several features of kernel that are available for user process
+* To be specific these can be called as syscalls which user process cannnot do it right or not
+	eg : opening reading writing a file can involve system calls
+
+There are 2 systemcalls called as fork() and exec():
+fork() : when are process and calls fork()  the kernel creates a near identical copy of process.
+exec() : when a process calls exec(program) , the kernel loads and start the program, replacing the current process.
+
+* Other than the init process all user process in the linux system starts as a result of fork()
+* Most of the time we run exec() to start a new program instead of creating a copy of existing process
+* eg is when you run ls command in the terminal window the shell that is running calls fork to create a copy of shell and the new shell runs exec(ls) to run ls.
+diagram	
+shell --> fork() --> shell
+                       copy of shell --> exec(ls) --> ls
+
+
+User space
+the main memory that the kernel allocates for the user process is called as user space
+because the process is simply a state in the memory
+user space is the memory for entire collection of running process
+
+process types and interactions
+
+			user interface   <-------> web browser
+			     /   \    \		    /	     \
+			    /     \    	 \	   /	      \
+			   /       \	    \ 	  /	       \
+			  /         \	        \/	    name caching server
+			 /           \	      	/  \	   /    	|
+			/             \        /      \/		|
+		       /               \      /    /      \		|
+	network configuration    communication bus      Diagonostic logging
+
+
+Users:
+User is an entity in linux that can run processes and own files
+User is mostly associated by username however the kernel identifies a user by numeric identifier called as userid.
+Users primarily exist to support permissions and boundries.
+Every user-space has a user owner and proccess is said to run as owner
+A user may terminate or modify its process but cannot interfere with other users process
+In addition, users may own files and choose whether to share them with other users.
+
+
+User processes make up the environment that you directly interact with;
+the kernel manages processes and hardware. Both the kernel and processes reside in memory.
+
+end
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Chapter 2
+Basic commands and Directory Hierarchy
+
+Shell -Bournne shell (/bin/sh) developed by Bell Labs
+linux user enhanced version of bourneshell called as bourne-again shell also called as bash
+bash is the default shell in linux
+
+cat file1 file2
+
+Standard input output
+Unix processes use I/O streams to read and write data. Processes read data from input streams and write data into output streams
+Streams are very flexible , eg: source for input stream can be a file , a terminal window or even output of another process
+
+$cat
+(this will take input from standard input stream and run until we press CRRL-D)
+Pressing CTRL-D on an empty line stops the current standard input entry from the terminal with an EOF (end-of-file) message (and often terminates a program).
+Don’t confuse this with CTRL-C, which usually terminates a program regardless of its input or output.
+
+basic commands
+ls , cp  , mv , touch , rm , echo , cd , mkdir , rmdir
+
+* matches all eg echo * - gives all file/dir names in curdir
+? matches one char - eg: b?at matched boat and brat
+
+if we don't want the shell to expand the glob for us we can use '*' quotes so that it ignores
+
+intermediate commands
+grep - this will give the matched output for a given expression
+
+$ grep root /etc/passwd
+$ grep root /etc/*
+ grep command options - most importantly -i (case insensitive) -v(matched inverse which means doesn't match the given expression)
+grep understands regular expression also (RE is more than just a simple wildcard)
+1) .* matches zero or more chars
+2) .+ matched one or more chars
+3) . matches exactly one char
+
+less command is userfull to print less content of a file
+
+pwd is used to print the current working direcxtory
+
+diff is used to find the difference between the two text files
+eg : [shrinidhi@osboxes examples]$ diff data.txt help.txt
+5c5
+< 40 go 40000 India
+---
+> 40 go 40000 Bangalore
+
+file is a command that gives what type of file is a given file
+[shrinidhi@osboxes examples]$ file data.csv
+data.csv: ASCII text
+
+find is used find a file in a give directory
+eg :
+[root@osboxes ~]# find / -name data.*
+/home/shrinidhi/examples/data.txt
+/home/shrinidhi/examples/data.csv
+/usr/lib/firmware/RTL8192E/data.img
+/usr/lib/firmware/ath6k/AR6002/data.patch.hw2_0.bin
+/usr/lib/firmware/ath6k/AR6003/hw1.0/data.patch.bin
+/usr/lib/firmware/ath6k/AR6003/hw2.0/data.patch.bin
+/usr/lib/firmware/ath6k/AR6003/hw2.1.1/data.patch.bin
+/usr/lib/firmware/ath6k/AR6003.1/hw2.1.1/data.patch.bin
+
+[root@osboxes ~]# find /home/shrinidhi -name data.*
+/home/shrinidhi/examples/data.txt
+/home/shrinidhi/examples/data.csv
+
+[shrinidhi@osboxes ~]$ find -name data.csv
+./examples/data.csv
+
+head and tail
+head and tails is used to get first 10 and last 10 lines of a given file
+to change the number of lines use -n option 
+
+sort 
+it is used to sort lines in a file as per alphanumeric characters
+[shrinidhi@osboxes examples]$ cat sorttest.txt
+20 abdevil 20000 Belgium
+ID Name Salary Country
+10 pole 10000 India
+40 go 40000 India
+[shrinidhi@osboxes examples]$ sort sorttest.txt
+10 pole 10000 India
+20 abdevil 20000 Belgium
+40 go 40000 India
+ID Name Salary Country
+
+changing password and shell
+passwd is used to change password
+chsh is used to change shell
+
+Environment variable and shell variables
+Shell can hold temporary variable called as shell variables, containing value of text strings
+[shrinidhi@osboxes notes]$ STUFF=blah
+[shrinidhi@osboxes notes]$ echo $STUFF
+blah
+
+An Environment variable is similar to shell variable but is not specific to a shell.
+If a program in a shell needs that variable the program can use that environment variable
+child processes inherit environment variables from their parent, many programs read them for configuration and options
+eg:
+[shrinidhi@osboxes examples]$ export STUFF
+[shrinidhi@osboxes examples]$ sh myscript.sh
+blah
+
+The Command PATH
+PATH is a special environment variable that contains the command path (or path for short)
+Its basically a list of directories that the shell searches to locate a command.
+If programs with the same name appear in several directories in the path, the shell runs the first matching program.
+eg:
+[shrinidhi@osboxes ~]$ echo $PATH
+/home/shrinidhi/.local/bin:/home/shrinidhi/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin
+
+To tell the shell to look in more places for programs, change the PATH environment variable
+$ PATH=$PATH:dir
+
+Shell Input and Output
+$command > file
+$command >> file 
+This will redirect the output file only if the output is success
+in case of failure it print the error in the terminal this is called as standard error
+to put standard errro to a file
+eg:
+[shrinidhi@osboxes ~]$ ls /fffffffff > f
+ls: cannot access '/fffffffff': No such file or directory
+[shrinidhi@osboxes ~]$ ls /fffffffff > f 2>e
+[shrinidhi@osboxes ~]$
+[shrinidhi@osboxes ~]$ cat e
+ls: cannot access '/fffffffff': No such file or directory
+
+which means if success put it into f and on failure put it to e
+The number 2 specifies the stream ID that the shell modifies. Stream ID 1 is standard output (the default), and 2 is standard error.
+You can also send the standard error to the same place as stdout with the >& notation
+eg 
+$ ls /fffffffff > f 2>&1
+
+shell input redirection (<)
+[shrinidhi@osboxes ~]$ tail < /proc/cpuinfo
+cpuid level     : 22
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx rdtscp lm constant_tsc rep_good nopl xtopology nonstop_tsc cpuid tsc_known_freq pni pclmulqdq ssse3 cx16 pcid sse4_1 sse4_2 movbe popcnt aes rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ibrs_enhanced fsgsbase bmi1 bmi2 invpcid rdseed clflushopt arat md_clear flush_l1d arch_capabilities
+bugs            : spectre_v1 spectre_v2 spec_store_bypass swapgs
+bogomips        : 4992.00
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 39 bits physical, 48 bits virtual
+power management:
+
+Listing and Management of processes
+For quick listing of process we can run ps command
+ps -f - in detail
+pa -e - extended
+PID - process ID
+
+ps x Show all of your running processes.
+ps ax Show all processes on the system, not just the ones you own.
+ps u Include more detailed information on processes.
+
+Process termination
+to send a terminate signal for a process you send kill command
+eg kill PID
+where by default kill give TERM signal which is terminate , you can choose to give other options like STOP, CONT etc
+eg kill -STOP pid - to freeze a process instead of terminating it
+eg kill -CONT pid - A stopped process is still in memory, ready to pick up where it left off
+
+When a process is running in the terminal using CTRL-C is giving and interrupt to the process and killing it using the INT signal
+kill -l gives different mapping of signal numbers to name
+eg kill -2 3018 (2 is interrupt signal)
+
+Job control
+shell supports job control its a way to send TSTP(similar to STOP) and CONT signal
+this helps to suspend and switch between programs
+TSTP can be sent using CTRL-Z and process starts again by using fg message
+
+nohup command can be used to run a program in the background
+
+File modes and Permissions
+eg:
+[shrinidhi@osboxes ~]$ ls -l
+total 4
+-rw-rw-r--. 1 shrinidhi shrinidhi 58 Oct  5 13:36 e
+-rw-rw-r-- - first - is type , next rw- is user , next is group and next is other permissions
+Some executable files have an s in the user permissions listing instead of an x. This indicates that the executable is setuid, meaning that when you execute the program, it runs as though the file owner is the user instead of you.
+
+modify permission can be done using chmod command
+Directories also have permissions. You can list the contents of a directory if it’s readable, but you can only access a file in a directory if the directory is executable
+
+Symbolic links
+A symbolic link is a file that points to another file or directory , effectively creating aliases , basically they offer faster access to obscure directory paths
+$ ln -s target linkname is used to create symbolic links
+where target is where we want to point and linkname is name of symbolic link
+-s represents symbolic
+
+Archiving and Compressing files
+compress
+gzip - user gunzip filename.gz to uncompress and gzip file to compress
+
+Archive
+tar -cvf and tar -xvf
+f- file
+v- verbose
+c- create
+x- extract
+
+both -Compressed Archives
+$ gunzip file.tar.gz
+$ tar xvf file.tar
+
+Linux Directory Hierarchy Essentials
+/ -
+  - bin 
+  - dev
+  - etc
+  - usr - bin , man , lib , local , sbin , share 
+  - home
+  - lib
+  - sbin
+  - tmp
+  - var - log , tmp
+
+/bin - Contains ready-to-run programs including most of them like cp,ls . They are binary files written in C.
+/dev - Contains device files
+/etc - this is the core config directory like boot, device, network.
+/home - holds directories for regular users
+/lib - An abbreviation for library, this directory holds library files containing code that executables can use
+/proc - directory contains information about currently running processes as well as some kernel parameters
+/sbin - The place for system executables. Programs in /sbin directories relate to system management, so regular users usually do not have /sbin components in their command paths.
+/tmp - A storage area for smaller, temporary files that you don’t care much about.
+/usr - 
+/boot - this has boot configurations
+/media - this has base attachment point for removable media such as flash drives.
+/opt - This has 3rd party services 
+
+usr has 
+/includes - holds files c complier
+/local - is where administrators can install their own software
+/man - contains manual pages
+
+Kernel Location
+On Linux systems, the kernel is normally a binary file /vmlinuz or /boot/vmlinuz
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CHAPTER 3 
+
+The udev system enables user-space programs to automatically configure and use new devices
+where udev is a device manager for the Linux kernel
+
+the kernel presents many of the device I/O interfaces to user processes as files. These device files are sometimes called device nodes
+devices are usually represented in the /dev directory
+
+$ echo blah blah > /dev/null
+Like any other command with redirected output, this sends some stuff
+from the standard output to a file. However, the file is /dev/null, a device, so
+the kernel bypasses its usual file operations and uses a device driver on data
+written to this device
+
+$ ls -l
+brw-rw---- 1 root disk 8, 1 Sep 6 08:37 sda1
+crw-rw-rw- 1 root root 1, 3 Sep 6 08:37 null
+prw-r--r-- 1 root root 0 Mar 3 19:17 fdata
+srw-rw-rw- 1 root root 0 Dec 18 07:43 log
+
+note the first character represents the kind of device 
+eg : b , c , p , s - refers to block, socket , pipe and socket
+
+Block Device: Process will access data from a block device in fixed chunks , disks can be easily split into block of data.
+Character Device : Character device work with data streams , we can only read char from and write char to a character device eg : /dev/null
+			these devices don't have a fixed size , when we read from or write into the kernel performs read or write operation for it
+			Printers directly attached to your computer are represented by character devices.
+Pipe device : Named pipes are like character devices, with another process at the other end of the I/O stream instead of a kernel driver.
+Socket device : Sockets are special-purpose interfaces that are frequently used for interprocess communication.
