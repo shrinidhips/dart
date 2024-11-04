@@ -1,0 +1,87 @@
+Jenkins
+Jobs - define specific tasks as compliling code, running tests , or deploying to an environment
+Builds - Each execution of a job with jenkins maintains a history for trobleshooting
+Freestyle - default project type offering a flexible job definition
+Pipelines - chains jobs together to automate tasks from development to deployment
+Stages - group related jobs into phrases like Build, Test ,Deploy for clarity
+Nodes - Machines where jenkins execute a job
+Plugins - extentions that extend the jenkins functionality by integrating with various tools and technologies
+
+pros 							and 	cons
+opensource and free						steep learning curve
+highly customizable						upgrading job
+scipts for advance automation			performance as increasing use
+pipeline as code						security 
+scalable								hosting
+
+Source code magement system
+multiple user working on same code base
+seamlessly , code review , cofusions  , sharing, rollbacking
+
+Understanding CI/CD
+
+Continuous integration
+gitlab -> </> --------------------------------------------------------------------------------------> testing jobs -------> Deployment->Production
+			|	|			MAIN/MASTER BRANCH						|							|
+			|	|													|							|
+			|	|													|							|
+			| feature1 branch										merge						merge	
+			|	|													|							|
+			|	|													|							|
+			|  commit -> pull request -> review -> approve----{jobs for testing and quality}	|
+			|																					|
+			|																					|
+		  feature2 branch																		|
+			|																					|
+			|																					|
+			|																					|
+			commit -> pull request -> review -> approve----{jobs for testing and quality}--------
+
+Continuous Deployment/Delivery
+
+https://github.com/sidd-harth/jenkins-hello-world.git
+https://github.com/jenkins-kk-demo/parameterized-pipeline-job-init
+
+
+Jenkins Architecture
+Jenkins node controller / Jenkins server -----> mastermind in handiling the entire CI/CD process
+1)Management tasks
+2)Job management
+3)Gives web interface
+
+Basic deployment - both controller and worker node are same
+Advance deployment - sperate controller and worker node
+
+the worker node connects to the jenkins controller by SSH (linux)or JNLP (java network launch protocol) (WINDOWS)
+
+location of installation depends on OS
+in linux its /var/lib/jenkins this will have all details like configuration , plugins , etc
+
+Installing jenkins
+Java is mandatory
+in the official documentation you will find all the required details as well
+
+Types of Jenkins project
+free style -> basic and flexible , custom build steps and configs , simple and unique need
+	*you can have mutiple steps linked togethere eg: 1)clone , build ---linked--->tests,push----linked-->deploy.
+	*UI configurable
+	*but sometimes complex
+	*cannot resume after controller failure 
+	*limited fucntionality
+pipeline project -> It uses a specific code to define entire build pipeline , includes stages, steps, conditions, workflows
+
+multibranch pipelines -> builds upon pipline project helps builds on multiple branches in since code base
+maven project -> maven tool , builds on basis of pom.xml
+multiconfig project -> same build process based on differnt config
+
+Plugins - they are the most important part as they can be used to integrate with multiple technologies(git etc)
+cd /var/lib/jenkins/plugins --> formats are .hpi(hudson plugin) .jpi(Jenkins plugin)
+they have code and config for plugins
+
+Jenkins pipline projects - offeres powerfull and versatile solution
+controls excution flow have multistage approach
+
+Types of pipeline projects:
+Scripted pipeline 								Declarative pipeline 
+groovy code (has control/customizable)			easy to learn / less customizable / less complexity
+
